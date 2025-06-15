@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TralaRELO Shop</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #1e1e1e, #3b3b3b);
+      color: white;
+    }
+
+    header {
+      background-color: black;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .cart-icon {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .cart-icon span {
+      background: red;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 14px;
+      position: absolute;
+      top: -8px;
+      right: -10px;
+    }
+
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+      padding: 30px;
+    }
+
+    .product {
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 8px;
+      width: 600px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    .image-box {
+      background-color: #444;
+      width: 240px;
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .image-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .checkout-btn {
+      margin-top: 10px;
+      background-color: #008000;
+      color: white;
+    }
+
+    footer {
+      background-color: #111;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #cart-panel {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 350px;
+      height: 100%;
+      background: #2c2c2c;
+      color: white;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+      padding: 20px;
+      overflow-y: auto;
+      z-index: 9999;
+    }
+
+    .cart-total {
+      text-align: center;
+      font-size: 18px;
+      margin: 10px 0;
+    }
+
+    #image-modal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      align-items: center;
+      justify-content: center;
+    }
+
+    #image-modal img {
+      max-width: 90%;
+      max-height: 80%;
+      border: 5px solid white;
+      border-radius: 10px;
+    }
+
+    #image-modal button {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      background: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Image Zoom Modal -->
+<div id="image-modal" onclick="closeImagePopup()">
+  <img id="zoomed-image" src="" alt="Zoomed">
+  <button onclick="closeImagePopup()">X</button>
+</div>
+
+<!-- Shop Page -->
+<div id="shop-page">
+  <header>
+    <h1>LUXURY WATCHES</h1>
+    <p>DISCOVER YOUR STYLE</p>
+    <div class="cart-icon" onclick="openCart()">🛒<span id="cart-count">0</span></div>
+    <nav>
+      <a onclick="filterCategory('')">All</a>
+      <a onclick="filterCategory('Home')">Home</a>
+      <a onclick="filterCategory('Men')">Men</a>
+      <a onclick="filterCategory('Women')">Women</a>
+      <a onclick="filterCategory('Luxury')">Luxury</a>
+      <a onclick="filterCategory('Couple')">Couple</a>
+    </nav>
+  </header>
+  <div class="products" id="product-list"></div>
+  <footer>
+    <h3>24/7 Customer Service</h3>
+    <p>Hi, this is TRALARELO Customer Service. What can we do for you?</p>
+  </footer>
+</div>
+
+<!-- Cart Panel -->
+<div id="cart-panel">
+  <h2>Your Cart</h2>
+  <div id="cart-items"></div>
+  <p class="cart-total" id="cart-total-panel">Total: ₱0.00</p>
+  <button onclick="closeCart()">Close</button>
+  <button class="checkout-btn" onclick="alert('Proceeding to Checkout...')">Checkout</button>
+</div>
+
+<script>
+  const products = [
+    { name: "Rolex Datejust 36", price: 600000, model: "Datejust", category: "Men", image:"https://i.ibb.co/TDQQM8wY/495269496-719802094319934-2573207427887459616-n.jpg" },
+    { name: "TralaRELO Submariner Lady- White Diamond Dial", price: 900000, model: "Datejust", category: "Women", image:"https://i.ibb.co/ccTFsKtP/505775015-1061984059202855-3487216388492203512-n.jpg" },
+    { name: "Rolex Submariner Black", price: 12500, model: "Submariner", category: "Men", image: "https://i.ibb.co/N25TJsCJ/3bc3321b-07b4-44e0-95f4-aa1086bfca71.jpg" },
+    { name: "Rolex Daytona Gold", price: 90000, model: "Daytona", category: "Luxury", image: "https://i.ibb.co/N25TJsCJ/3bc3321b-07b4-44e0-95f4-aa1086bfca71.jpg" },
+    { name: "Rolex Pearlmaster", price: 112000, model: "Datejust", category: "Luxury", image: "https://i.ibb.co/N25TJsCJ/3bc3321b-07b4-44e0-95f4-aa1086bfca71.jpg" },
+    { name: "Rolex Oyster Perpetual", price: 7500, model: "Submariner", category: "Home", image: "https://i.ibb.co/N25TJsCJ/3bc3321b-07b4-44e0-95f4-aa1086bfca71.jpg" },
+    { name: "TralaRELO Couple Classic Set", price: 1500000, model: "Love Series", category: "Couple", image:"https://i.ibb.co/Xfh50pdK/495267301-573840452442255-821387198795525614-n.jpg" },
+  ];
+
+  let cart = [];
+  let currentCategory = '';
+
+  function displayProducts() {
+    const list = document.getElementById("product-list");
+    list.innerHTML = "";
+    const filtered = products.filter(p =>
+      currentCategory === "" || p.category.toLowerCase() === currentCategory.toLowerCase()
+    );
+    filtered.forEach((p, index) => {
+      const div = document.createElement("div");
+      div.className = "product";
+      div.innerHTML = `
+        <div class="image-box" onclick="showImagePopup('${p.image}')">
+          <img src="${p.image}" alt="${p.name}">
+        </div>
+        <div>
+          <h3>${p.name}</h3>
+          <p>₱${p.price.toLocaleString()}</p>
+          <p>Model: ${p.model}</p>
+          <button onclick="addToCart(${index})">Add to Cart 🛒</button>
+          <button class="checkout-btn" onclick="checkout(${index})">Checkout</button>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function addToCart(index) {
+    cart.push(products[index]);
+    updateCartDisplay();
+  }
+
+  function checkout(index) {
+    cart = [products[index]];
+    updateCartDisplay();
+    openCart();
+  }
+
+  function updateCartDisplay() {
+    document.getElementById("cart-count").innerText = cart.length;
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    document.getElementById("cart-total-panel").innerText = `Total: ₱${total.toLocaleString()}`;
+    const itemsContainer = document.getElementById("cart-items");
+    itemsContainer.innerHTML = "";
+    cart.forEach(item => {
+      const div = document.createElement("div");
+      div.innerHTML = `<p>${item.name} - ₱${item.price.toLocaleString()}</p>`;
+      itemsContainer.appendChild(div);
+    });
+  }
+
+  function openCart() {
+    document.getElementById("cart-panel").style.display = "block";
+  }
+
+  function closeCart() {
+    document.getElementById("cart-panel").style.display = "none";
+  }
+
+  function filterCategory(category) {
+    currentCategory = category;
+    displayProducts();
+  }
+
+  function showImagePopup(src) {
+    document.getElementById("zoomed-image").src = src;
+    document.getElementById("image-modal").style.display = "flex";
+  }
+
+  function closeImagePopup() {
+    document.getElementById("image-modal").style.display = "none";
+  }
+
+  // Initial load
+  displayProducts();
+</script>
+
+</body>
+</html>
